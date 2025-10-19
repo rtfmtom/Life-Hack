@@ -26,15 +26,16 @@ const serverAddr = "localhost:41114"
 var (
 	program string
 	path    string
+	circuit string
 )
 
-func startDigital(path string) (*exec.Cmd, error) {
+func startDigital(path string, circuit string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 
 	if strings.HasSuffix(path, ".jar") {
-		cmd = exec.Command("java", "-jar", path)
+		cmd = exec.Command("java", "-jar", path, "-circuit", circuit)
 	} else {
-		cmd = exec.Command(path)
+		cmd = exec.Command(path, "-circuit", circuit)
 	}
 
 	cmd.Stdout = os.Stdout
@@ -53,6 +54,8 @@ func main() {
 	flag.StringVar(&program, "p", "", "path to .hex file to be run")
 	flag.StringVar(&path, "digital", "", "path to Digital executable (.jar or .exe)")
 	flag.StringVar(&path, "d", "", "path to Digital executable (.jar or .exe)")
+	flag.StringVar(&circuit, "circuit", "", "path to Digital circuit (.dig)")
+	flag.StringVar(&circuit, "c", "", "path to Digital circuit (.dig)")
 	flag.Parse()
 
 	if program == "" {
@@ -73,7 +76,17 @@ func main() {
 			"  2. Use the -d flag: -d /path/to/Digital.jar")
 	}
 
-	cmd, err := startDigital(path)
+	if circuit == "" {
+		circuit = os.Getenv("CIRCUIT_PATH")
+	}
+
+	if circuit == "" {
+		log.Fatal("Circuit path not specified. Please either:\n" +
+			"  1. Set the CIRCUIT_PATH environment variable, or\n" +
+			"  2. Use the -c flag: -c /path/to/Circuit.dig")
+	}
+
+	cmd, err := startDigital(path, circuit)
 	if err != nil {
 		log.Fatal(err)
 	}
