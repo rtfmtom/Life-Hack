@@ -1,6 +1,6 @@
 // Package ui provides GUI rendering functionality for Conway's Game of Life
 // using the Fyne toolkit.
-package ui
+package main
 
 import (
 	"image/color"

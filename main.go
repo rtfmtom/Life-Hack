@@ -13,10 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"Life-Hack/client"
-	"Life-Hack/game"
-	"Life-Hack/ui"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 )
@@ -106,7 +102,7 @@ func main() {
 	log.Println("Waiting for Digital server to start...")
 	time.Sleep(3 * time.Second)
 
-	tcpClient := client.New(serverAddr, 5*time.Second)
+	tcpClient := New(serverAddr, 5*time.Second)
 
 	command := []string{"start:", program}
 	start := strings.Join(command, "")
@@ -124,7 +120,7 @@ func main() {
 	gridSize := 32
 	cellSize := float32(20)
 
-	cells := ui.InitGUI(w, gridSize, cellSize)
+	cells := InitGUI(w, gridSize, cellSize)
 
 	go func() {
 		// read memory addresses: 0x2000-0x23FF
@@ -140,7 +136,7 @@ func main() {
 				continue
 			}
 
-			gridData, err := game.Grid(response)
+			gridData, err := Grid(response)
 			if err != nil {
 				log.Printf("Error: %v", err)
 				time.Sleep(10 * time.Millisecond)
@@ -148,7 +144,7 @@ func main() {
 			}
 
 			fyne.DoAndWait(func() {
-				ui.UpdateGUI(cells, gridData, alive, dead)
+				UpdateGUI(cells, gridData, alive, dead)
 			})
 
 			time.Sleep(10 * time.Millisecond)
