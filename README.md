@@ -1,7 +1,7 @@
 ### Related Repositories
+[Digital](https://github.com/rtfmtom/Digital)  
 [CPU](https://github.com/rtfmtom/CPU)  
 [Assembler]()  
-[Digital](https://github.com/rtfmtom/Digital)
 
 # Life-Hack
 
