@@ -6,8 +6,11 @@ import (
 	"image/color"
 	"log"
 	"os"
+	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"Life-Hack/client"
@@ -20,11 +23,38 @@ import (
 
 const serverAddr = "localhost:41114"
 
-var program string
+var (
+	program string
+	path    string
+)
+
+// startDigital launches Digital
+// Returns the process handle and any error
+func startDigital(path string) (*exec.Cmd, error) {
+	var cmd *exec.Cmd
+
+	if strings.HasSuffix(path, ".jar") {
+		cmd = exec.Command("java", "-jar", path)
+	} else {
+		cmd = exec.Command(path)
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("failed to start Digital: %w", err)
+	}
+
+	log.Printf("Started Digital (PID: %d)", cmd.Process.Pid)
+	return cmd, nil
+}
 
 func main() {
 	flag.StringVar(&program, "program", "", "path to .hex file to be run")
 	flag.StringVar(&program, "p", "", "path to .hex file to be run")
+	flag.StringVar(&path, "digital", "", "path to Digital executable (.jar or .exe)")
+	flag.StringVar(&path, "d", "", "path to Digital executable (.jar or .exe)")
 	flag.Parse()
 
 	if program == "" {
@@ -34,6 +64,36 @@ func main() {
 		}
 		program = filepath.Join(cwd, "example", "Conway32.hex")
 	}
+
+	if path == "" {
+		path = os.Getenv("DIGITAL_PATH")
+	}
+
+	if path == "" {
+		log.Fatal("Digital path not specified. Please either:\n" +
+			"  1. Set the DIGITAL_PATH environment variable, or\n" +
+			"  2. Use the -d flag: -d /path/to/Digital.jar")
+	}
+
+	cmd, err := startDigital(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Clean up process on interrupt
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		log.Println("Shutting down Digital...")
+		if cmd != nil && cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		os.Exit(0)
+	}()
+
+	log.Println("Waiting for Digital server to start...")
+	time.Sleep(3 * time.Second)
 
 	tcpClient := client.New(serverAddr, 5*time.Second)
 
@@ -85,4 +145,10 @@ func main() {
 	}()
 
 	w.ShowAndRun()
+
+	// Clean up process when window closes
+	if cmd != nil && cmd.Process != nil {
+		log.Println("Shutting down Digital...")
+		cmd.Process.Kill()
+	}
 }
