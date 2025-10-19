@@ -28,8 +28,6 @@ var (
 	path    string
 )
 
-// startDigital launches Digital
-// Returns the process handle and any error
 func startDigital(path string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 
