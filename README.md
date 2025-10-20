@@ -27,7 +27,6 @@ mvn clean install
 
 Set the `DIGITAL_PATH` environment variable:
 ```bash
-# Linux/Mac
 export DIGITAL_PATH="/path/to/Digital/target/Digital.jar"
 ```
 
@@ -49,7 +48,6 @@ This repository contains all the `.dig` circuit files for the simulated Hack com
 
 Set the `CIRCUIT_PATH` environment variable:
 ```bash
-# Linux/Mac
 export CIRCUIT_PATH="/path/to/CPU/circuits/HackComputer.dig"
 ```
 
@@ -69,7 +67,7 @@ go mod download
 
 ## Usage
 
-With the `DIGITAL_PATH` and `CIRCUIT_PATH` environment variables configured, run the application with default settings:
+Run the application with default settings (uses `DIGITAL_PATH` and `CIRCUIT_PATH` environment variables if set, or specify paths via command-line flags):
 ```bash
 go run .
 ```
@@ -81,10 +79,11 @@ The default configuration performs the following steps:
 3. Sends the start command to begin program execution
 4. Opens the GUI and continuously reads memory addresses `0x2000-0x23FF` to visualize the Game of Life state
 
-### All Options
+### Building and Using Custom Paths
 
-After building the application (`go build`), you can run it with custom paths:
+You can build the application and run it with custom paths to override the defaults:
 ```bash
+go build
 ./life-hack -d /path/to/Digital.jar -c /path/to/Circuit.dig -p /path/to/program.hex
 ```
 
